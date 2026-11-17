@@ -1,8 +1,20 @@
 <script setup lang="ts">
 import type { AudioEngine } from "../model/engine";
 import type { StageDocument } from "../../../shared/types";
+import type { History } from "../../history";
+import { useSlider } from "../../history";
 import { clock } from "../../../shared/math";
-defineProps<{ engine: AudioEngine; doc: StageDocument }>();
+const props = defineProps<{
+  engine: AudioEngine;
+  doc: StageDocument;
+  history: History;
+}>();
+const gain = useSlider(props.history, () => ["gain"], "监听音量");
+const sensitivity = useSlider(
+  props.history,
+  () => ["sensitivity"],
+  "响应灵敏度",
+);
 function load(e: Event, engine: AudioEngine) {
   const f = (e.target as HTMLInputElement).files?.[0];
   if (f) void engine.file(f);
@@ -69,7 +81,8 @@ function load(e: Event, engine: AudioEngine) {
         min="0"
         max="1"
         step="0.01"
-        v-model.number="doc.gain" /></label
+        v-model.number="gain.value"
+        v-on="gain.on" /></label
     ><label class="control"
       >响应灵敏度 <b>{{ doc.sensitivity.toFixed(1) }}×</b
       ><input
@@ -77,7 +90,8 @@ function load(e: Event, engine: AudioEngine) {
         min="0.3"
         max="3"
         step="0.1"
-        v-model.number="doc.sensitivity"
+        v-model.number="sensitivity.value"
+        v-on="sensitivity.on"
     /></label>
     <p v-if="engine.state.error" role="alert">{{ engine.state.error }}</p>
     <div class="input-level">

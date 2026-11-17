@@ -142,6 +142,22 @@ nav .current {
   gap: 24px;
   align-items: center;
 }
+.history-actions {
+  display: flex;
+  gap: 6px;
+}
+.history-actions button {
+  padding: 6px 8px;
+  display: grid;
+  place-items: center;
+  color: #a9a3be;
+}
+.history-actions button:disabled {
+  color: #55565f;
+  background: #1a1b21;
+  border-color: var(--line);
+  cursor: default;
+}
 .local-status {
   font-size: 9px;
   letter-spacing: 1.3px;
@@ -378,19 +394,46 @@ input[type="checkbox"] {
   margin-bottom: 17px;
 }
 .scene-row {
-  padding: 8px;
   margin: 3px -5px;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  width: calc(100% + 10px);
+  border: 1px solid transparent;
+  border-radius: 6px;
+}
+.scene-row.active {
+  background: #24202f;
+  border-color: #4b3d63;
+}
+.scene-select {
+  flex: 1;
+  min-width: 0;
+  padding: 8px;
   display: flex;
   align-items: center;
   text-align: left;
   gap: 12px;
-  width: calc(100% + 10px);
   background: transparent;
   border-color: transparent;
 }
-.scene-row.active {
-  background: #24202f;
-  border: 1px solid #4b3d63;
+.scene-duplicate {
+  padding: 5px;
+  margin-right: 5px;
+  display: grid;
+  place-items: center;
+  background: transparent;
+  border-color: transparent;
+  color: #6c6879;
+  opacity: 0;
+}
+.scene-row:hover .scene-duplicate,
+.scene-duplicate:focus-visible {
+  opacity: 1;
+}
+.scene-duplicate:hover {
+  color: #c9b6f2;
+  background: #2c2839;
 }
 .scene-thumb {
   width: 46px;

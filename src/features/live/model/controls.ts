@@ -1,6 +1,7 @@
 import { ref } from "vue";
 import type { StageDocument } from "../../../shared/types";
-export function createControls(doc: StageDocument) {
+import type { History } from "../../history";
+export function createControls(doc: StageDocument, history: History) {
   const taps = ref<number[]>([]),
     bpm = ref(120);
   function tap() {
@@ -12,10 +13,10 @@ export function createControls(doc: StageDocument) {
       );
   }
   function blackout() {
-    doc.blackout = !doc.blackout;
+    history.set(["blackout"], !doc.blackout, "黑场");
   }
   function freeze() {
-    doc.frozen = !doc.frozen;
+    history.set(["frozen"], !doc.frozen, "冻结运动");
   }
   return { bpm, tap, blackout, freeze };
 }

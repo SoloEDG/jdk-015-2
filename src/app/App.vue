@@ -7,8 +7,11 @@ import {
   SlidersHorizontal,
   Disc3,
   ArrowUpRight,
+  Undo2,
+  Redo2,
 } from "lucide-vue-next";
 import { createDocument } from "../shared/document";
+import { createHistory } from "../features/history";
 import { createAudio, AudioPanel } from "../features/audio";
 import { StageCanvas, ThemePanel } from "../features/visuals";
 import { createScenes, ScenePanel, SceneStrip } from "../features/scenes";
@@ -20,9 +23,10 @@ import {
 } from "../features/live";
 import { createRecorder, RecordPanel, TakeList } from "../features/recording";
 const doc = createDocument(),
+  history = createHistory(doc),
   audio = createAudio(doc),
-  scenes = createScenes(doc),
-  controls = createControls(doc),
+  scenes = createScenes(doc, history),
+  controls = createControls(doc, history),
   recorder = createRecorder();
 const canvas = ref<HTMLCanvasElement>(),
   stage = ref<HTMLElement>();
@@ -35,6 +39,8 @@ const unbind = bindShortcuts({
   blackout: controls.blackout,
   freeze: controls.freeze,
   tap: controls.tap,
+  undo: history.undo,
+  redo: history.redo,
 });
 function start() {
   if (canvas.value) recorder.start(canvas.value, audio.stream());
@@ -48,6 +54,7 @@ async function fullscreen() {
 }
 onUnmounted(() => {
   unbind();
+  history.dispose();
   audio.dispose();
   recorder.dispose();
 });
@@ -62,6 +69,31 @@ onUnmounted(() => {
       >
       <nav><a class="current">演出工作台</a><span>声音的另一种形状</span></nav>
       <div class="header-right">
+        <div class="history-actions">
+          <button
+            :disabled="!history.state.canUndo"
+            :title="
+              history.state.canUndo
+                ? `撤销：${history.state.undoLabel}`
+                : '没有可撤销的操作'
+            "
+            aria-label="撤销"
+            @click="history.undo"
+          >
+            <Undo2 :size="15" /></button
+          ><button
+            :disabled="!history.state.canRedo"
+            :title="
+              history.state.canRedo
+                ? `重做：${history.state.redoLabel}`
+                : '没有可重做的操作'
+            "
+            aria-label="重做"
+            @click="history.redo"
+          >
+            <Redo2 :size="15" />
+          </button>
+        </div>
         <span class="local-status"><i></i> LOCAL SESSION</span
         ><span class="version">v1.0</span>
       </div>
@@ -80,9 +112,10 @@ onUnmounted(() => {
     </div>
     <main>
       <aside class="left-column">
-        <AudioPanel :engine="audio" :doc="doc" /><ScenePanel
+        <AudioPanel :engine="audio" :doc="doc" :history="history" /><ScenePanel
           :doc="doc"
           :store="scenes"
+          :history="history"
         />
       </aside>
       <div class="center-column">
@@ -117,6 +150,7 @@ onUnmounted(() => {
         <p v-if="fullError" role="alert">{{ fullError }}</p>
         <SceneStrip :doc="doc" @select="scenes.select" /><ThemePanel
           :scene="scenes.active.value"
+          :history="history"
         /><TakeList :recorder="recorder" />
       </div>
       <aside class="right-column">
@@ -124,6 +158,7 @@ onUnmounted(() => {
           :doc="doc"
           :controls="controls"
           :beat="audio.frame.value.beat"
+          :history="history"
         /><RecordPanel :recorder="recorder" @start="start" />
         <div class="note">
           <Radio :size="19" />
@@ -141,8 +176,8 @@ onUnmounted(() => {
         ><SlidersHorizontal :size="13" /> ALL SYSTEMS READY
         <i>·</i> 浏览器本地运行</span
       ><span
-        >SPACE 播放 / 暂停 <i>·</i> 1–4 场景 <i>·</i> B 黑场 <i>·</i> F
-        冻结</span
+        >SPACE 播放 / 暂停 <i>·</i> 1–4 场景 <i>·</i> B 黑场 <i>·</i> F 冻结
+        <i>·</i> CTRL+Z 撤销 <i>·</i> CTRL+SHIFT+Z 重做</span
       ><span>MADE FOR THE MOMENT ↗</span>
     </footer>
   </div>
